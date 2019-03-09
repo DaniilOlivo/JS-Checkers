@@ -1,0 +1,68 @@
+
+
+body {
+    background-color: black;
+    background-image: url("../img/bg.png");
+    background-size: 100%;
+}
+
+main {
+    padding-top: 15vh;
+    padding-bottom: 15vh;
+}
+
+.menu {
+    width: 600px;
+    height: 400px;
+    margin: auto;
+}
+
+#game {
+    background-color: black;
+    display: none;
+    position: relative;
+    width: 440px;
+    height: 440px;
+    background: url("../img/desk2.jpg");
+    margin: auto;
+    box-shadow:
+        inset 2px 2px black,
+        20px 30px 20px 0px black;
+}
+
+#desk {
+    position: absolute;
+    border-collapse: collapse;
+}
+
+td {
+    vertical-align: top;
+    padding: 0px;
+    width: 55px;
+    height: 55px;
+}
+
+h1, h2{
+    text-align: center;
+    font-size: 3em;
+    color: darkgray;
+    padding-top: 10px;
+}
+
+button {
+    display: block;
+    margin: auto;
+    text-align: center;
+    font-size: 3em;
+    color: darkgray;
+    margin-top: 20px;
+    background: rgb(40, 40, 40);
+    border-radius: 10px;
+    border-color: goldenrod;
+    outline: none;
+}
+
+button:active {
+    background: darkred;
+    color: black;
+}
