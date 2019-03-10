@@ -15,6 +15,8 @@ function comparing_arrays(array_1, array_2) {
 class Desk{
     constructor() {
         this.sel = null
+        this.action = false
+        this.turn = 1
 
         this.array = new Array(n)
         for(i = 0; i < n; i++)
@@ -66,14 +68,30 @@ class Desk{
             if (this.sel != null) {
                 this.sel.motion_check(id)
                 this.sel.check_take(id)
+
+                if (this.action) {
+                    this.next_turn()
+                    this.action = false
+                }
             }
     }
 
     select(cell) {
         if (this.sel != null)
             this.sel.select(false)
-        cell.select(true)
-        this.sel = cell
+        if (cell.color == this.turn) {
+            cell.select(true)
+            this.sel = cell
+        }        
+    }
+
+    next_turn() {
+        this.sel.select(false)
+        this.sel = null
+        if (this.turn == 1)
+            this.turn = 0
+        else
+            this.turn = 1
     }
 }
 
@@ -141,8 +159,10 @@ class Checker {
         else
             direct = - 1
         
-        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1))
+        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1)) {
             this.move(index)
+            this.desk.action = true
+        }
     }
 
     move(index) {
@@ -170,6 +190,7 @@ class Checker {
                     if (intermediate_cell.color != this.color) {
                         this.move(index)
                         intermediate_cell.take()
+                        this.desk.action = true
                     }
             }
         }
@@ -190,8 +211,6 @@ function init() {
         music.src = new_music;
         music.play();
     }
-
-    var turn = 1
 
     create_HTML_table()
     function create_HTML_table() {
