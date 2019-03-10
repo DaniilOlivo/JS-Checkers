@@ -66,8 +66,8 @@ class Desk{
             this.select(cell)
         else 
             if (this.sel != null) {
-                this.sel.motion_check(id)
-                this.sel.check_take(id)
+                this.sel.take(id)
+                this.sel.move(id)
 
                 if (this.action) {
                     this.next_turn()
@@ -92,6 +92,24 @@ class Desk{
             this.turn = 0
         else
             this.turn = 1
+    }
+
+    check_mandatory_take() {
+        var j, k
+        for(j = 0; j < n; j++) {
+            if (j % 2 == 0)
+                k = 0
+            else
+                k = 1
+            
+            for(k; k < n; k += 2) {
+                var cell = this.array[j][k]
+                if (cell != 0)
+                    if (cell.color == this.turn)
+                        cell.check_take
+            }
+
+        }
     }
 }
 
@@ -152,6 +170,15 @@ class Checker {
         return comparing_arrays(index, this.relative_index(y, x))
     }
 
+    movement(index) {
+        this.remove()
+        this.desk.set_cell(this.cell, 0)
+        this.desk.set_cell(index, this)
+        this.cell = index
+        this.display()
+        this.desk.action = true
+    }
+
     motion_check(index) {
         var direct
         if (this.color == 1)
@@ -159,18 +186,14 @@ class Checker {
         else
             direct = - 1
         
-        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1)) {
-            this.move(index)
-            this.desk.action = true
-        }
+        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1))
+            return true
+        return false
     }
 
     move(index) {
-        this.remove()
-        this.desk.set_cell(this.cell, 0)
-        this.desk.set_cell(index, this)
-        this.cell = index
-        this.display()
+        if (this.motion_check(index))
+            this.movement(index)
     }
 
     check_take(index) {
@@ -187,18 +210,20 @@ class Checker {
                 index_intermediate_cell = this.relative_index(y, x)
                 intermediate_cell = this.desk.get_cell(index_intermediate_cell)
                 if (intermediate_cell != 0)
-                    if (intermediate_cell.color != this.color) {
-                        this.move(index)
-                        intermediate_cell.take()
-                        this.desk.action = true
-                    }
+                    if (intermediate_cell.color != this.color)
+                        return [true, intermediate_cell]
             }
         }
+        return [false, null]
     }
 
-    take() {
-        this.remove()
-        this.desk.set_cell(this.cell, 0)
+    take(index) {
+        var result_check = this.check_take(index)
+        if (result_check[0]) {
+            this.movement(index)
+            result_check[1].remove()
+            result_check[1].desk.set_cell(this.cell, 0)
+        }
     }
 }
 
