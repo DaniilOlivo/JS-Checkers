@@ -4,6 +4,14 @@ var i
 var j
 var n = 8
 
+// Фунукция сравнения массивов
+function comparing_arrays(array_1, array_2) {
+    for(var l = 0; l < array_1.length; l++)
+        if (array_1[l] != array_2[l])
+            return false
+    return true
+}
+
 class Desk{
     constructor() {
         this.sel = null
@@ -57,6 +65,7 @@ class Desk{
         else 
             if (this.sel != null) {
                 this.sel.motion_check(id)
+                this.sel.check_take(id)
             }
     }
 
@@ -115,16 +124,25 @@ class Checker {
         this.display()
     }
 
+    // Относительный индекс от шакшки
+    relative_index(y, x) {
+        return [this.cell[0] + y, this.cell[1] + x]
+    }
+
+    // Сокращенная проверка клеток
+    comp_arr(index, y, x) {
+        return comparing_arrays(index, this.relative_index(y, x))
+    }
+
     motion_check(index) {
         var direct
         if (this.color == 1)
-            direct = this.cell[0] + 1
+            direct = + 1
         else
-            direct = this.cell[0] - 1
+            direct = - 1
         
-        if (index[0] == direct)
-            if (index[1] == this.cell[1] - 1 || index[1] == this.cell[1] + 1)
-                this.move(index)
+        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1))
+            this.move(index)
     }
 
     move(index) {
@@ -133,6 +151,33 @@ class Checker {
         this.desk.set_cell(index, this)
         this.cell = index
         this.display()
+    }
+
+    check_take(index) {
+        var sides = [[+1, -1], [+1, +1], [-1, -1], [-1, +1]]
+        var y
+        var x
+        var intermediate_cell // Клетка между index и клетткой, где стоит шашка
+        var index_intermediate_cell
+
+        for(i = 0; i < 4; i++) {
+            y = sides[i][0]
+            x = sides[i][1]
+            if (this.comp_arr(index, y * 2, x  * 2)) {
+                index_intermediate_cell = this.relative_index(y, x)
+                intermediate_cell = this.desk.get_cell(index_intermediate_cell)
+                if (intermediate_cell != 0)
+                    if (intermediate_cell.color != this.color) {
+                        this.move(index)
+                        intermediate_cell.take()
+                    }
+            }
+        }
+    }
+
+    take() {
+        this.remove()
+        this.desk.set_cell(this.cell, 0)
     }
 }
 
