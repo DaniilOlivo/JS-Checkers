@@ -1,4 +1,3 @@
-
 $(document).ready(init);
 var i
 var j
@@ -17,7 +16,8 @@ class Desk{
         this.sel = null
         this.action = false
         this.turn = 1
-
+        this.mandatory_taking = false
+        
         this.array = new Array(n)
         for(i = 0; i < n; i++)
             this.array[i] = new Array(n)
@@ -59,15 +59,14 @@ class Desk{
         this.array[index[0]][index[1]] = value
     }
 
-    conditional_test(id) {
+    handler(id) {
         var cell = this.get_cell(id)
         
         if (cell != 0)
             this.select(cell)
         else 
             if (this.sel != null) {
-                this.sel.take(id)
-                this.sel.move(id)
+                this.sel.action(id)
 
                 if (this.action) {
                     this.next_turn()
@@ -94,35 +93,22 @@ class Desk{
             this.turn = 1
     }
 
-    check_mandatory_take() {
-        var j, k
-        for(j = 0; j < n; j++) {
-            if (j % 2 == 0)
-                k = 0
-            else
-                k = 1
-            
-            for(k; k < n; k += 2) {
-                var cell = this.array[j][k]
-                if (cell != 0)
-                    if (cell.color == this.turn)
-                        cell.check_take
-            }
-
-        }
+    check() {
+        for(i = 0; i < n; i++)
+            for(j = 0; j < n; j++)
+                if (this.array[i][j] != 0)
+                    this.array[i][j].check()
     }
 }
 
 class Checker {
     constructor(cell, color, desk) {
-        /*
-        cell - индекс ячейки, где находится шашка
-        color - цвет: 0 (черная) или 1 (белая)
-        desk - ссылка на доску
-        */
         this.cell = cell;
         this.color = color;
         this.desk = desk;
+        
+        this.mandatory_taking = false //Должна ли шашка бить
+        this.possible_actions = []
 
         this.selecting = false;
         
@@ -170,59 +156,61 @@ class Checker {
         return comparing_arrays(index, this.relative_index(y, x))
     }
 
+    removal() {
+        this.remove()
+        this.desk.set_cell(this.cell, 0)
+    }
+
     movement(index) {
         this.remove()
         this.desk.set_cell(this.cell, 0)
         this.desk.set_cell(index, this)
         this.cell = index
         this.display()
-        this.desk.action = true
     }
 
-    motion_check(index) {
+    check() {
+        this.motion_check()
+        this.take_check()
+    }
+
+    motion_check() {
         var direct
         if (this.color == 1)
             direct = + 1
         else
             direct = - 1
         
-        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1))
-            return true
-        return false
+        for(i = -1; i <= 2; i += 2)
+            if (this.desk.get_cell(direct, i) == 0)
+                this.possible_actions.push({"Index": [direct, i]})
     }
 
-    move(index) {
-        if (this.motion_check(index))
-            this.movement(index)
-    }
-
-    check_take(index) {
-        var sides = [[+1, -1], [+1, +1], [-1, -1], [-1, +1]]
-        var y
-        var x
+    take_check() {
         var intermediate_cell // Клетка между index и клетткой, где стоит шашка
-        var index_intermediate_cell
 
-        for(i = 0; i < 4; i++) {
-            y = sides[i][0]
-            x = sides[i][1]
-            if (this.comp_arr(index, y * 2, x  * 2)) {
-                index_intermediate_cell = this.relative_index(y, x)
-                intermediate_cell = this.desk.get_cell(index_intermediate_cell)
-                if (intermediate_cell != 0)
-                    if (intermediate_cell.color != this.color)
-                        return [true, intermediate_cell]
-            }
-        }
-        return [false, null]
+        for(i = -1; i <= 1; i += 2)
+            for(j = -1; j <= 1; j += 2)
+                if (this.desk.get_cell([i * 2, j * 2]) == 0) {
+                    intermediate_cell = this.desk.get_cell(this.relative_index(i, j))
+                    if (intermediate_cell != 0)
+                        if (intermediate_cell.color != this.color) {
+                            this.possible_actions.push({"Index": [i * 2, j * 2], "Target": intermediate_cell})
+                            this.mandatory_taking = true
+                        }
+                }
     }
 
-    take(index) {
-        var result_check = this.check_take(index)
-        if (result_check[0]) {
-            this.movement(index)
-            result_check[1].remove()
-            result_check[1].desk.set_cell(this.cell, 0)
+    action(index) {
+        for(i = 0; i < this.possible_actions.length; i++) {
+            var action = this.possible_actions[i]
+            if (comparing_arrays(action["Index"], index))
+                if ("Target" in action) {
+                    this.movement(index)
+                    action["Target"].removal()
+                }
+                else
+                    this.movement(index)
         }
     }
 }
@@ -263,6 +251,6 @@ function init() {
         var id = $(this).attr('id')
         id = [+id[5], +id[7]]
 
-        desk.conditional_test(id)
+        desk.handler(id)
     })
 }
