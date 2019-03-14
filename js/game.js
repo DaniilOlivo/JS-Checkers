@@ -4,7 +4,6 @@ var i
 var j
 var n = 8
 
-// Фунукция сравнения массивов
 function comparing_arrays(array_1, array_2) {
     for(var l = 0; l < array_1.length; l++)
         if (array_1[l] != array_2[l])
@@ -41,9 +40,9 @@ class Desk{
                 for(j; j < n; j += 2) {
                     var color
                     if (i < 3) 
-                        color = 1 // Расстановка белых шашек
+                        color = 1
                     else
-                        color = 0 // Расстановка черных шашек
+                        color = 0
                         
                     this.array[i][j] = new Checker([i, j], color, this)
                     this.array[i][j].display()
@@ -59,7 +58,7 @@ class Desk{
         this.array[index[0]][index[1]] = value
     }
 
-    conditional_test(id) {
+    handler(id) {
         var cell = this.get_cell(id)
         
         if (cell != 0)
@@ -97,11 +96,6 @@ class Desk{
 
 class Checker {
     constructor(cell, color, desk) {
-        /*
-        cell - индекс ячейки, где находится шашка
-        color - цвет: 0 (черная) или 1 (белая)
-        desk - ссылка на доску
-        */
         this.cell = cell;
         this.color = color;
         this.desk = desk;
@@ -142,12 +136,10 @@ class Checker {
         this.display()
     }
 
-    // Относительный индекс от шакшки
     relative_index(y, x) {
         return [this.cell[0] + y, this.cell[1] + x]
     }
 
-    // Сокращенная проверка клеток
     comp_arr(index, y, x) {
         return comparing_arrays(index, this.relative_index(y, x))
     }
@@ -174,26 +166,19 @@ class Checker {
     }
 
     check_take(index) {
-        var sides = [[+1, -1], [+1, +1], [-1, -1], [-1, +1]]
-        var y
-        var x
-        var intermediate_cell // Клетка между index и клетткой, где стоит шашка
-        var index_intermediate_cell
+        var intermediate_cell
 
-        for(i = 0; i < 4; i++) {
-            y = sides[i][0]
-            x = sides[i][1]
-            if (this.comp_arr(index, y * 2, x  * 2)) {
-                index_intermediate_cell = this.relative_index(y, x)
-                intermediate_cell = this.desk.get_cell(index_intermediate_cell)
-                if (intermediate_cell != 0)
-                    if (intermediate_cell.color != this.color) {
-                        this.move(index)
-                        intermediate_cell.take()
-                        this.desk.action = true
-                    }
-            }
-        }
+        for(i = -1; i <= 1; i += 2) 
+            for(j = -1; j <= 1; j += 2)
+                if (this.comp_arr(index, i * 2, j  * 2)) {
+                    intermediate_cell = this.desk.get_cell(this.relative_index(i, j))
+                    if (intermediate_cell != 0)
+                        if (intermediate_cell.color != this.color) {
+                            this.move(index)
+                            intermediate_cell.take()
+                            this.desk.action = true
+                        }
+                }
     }
 
     take() {
@@ -238,6 +223,6 @@ function init() {
         var id = $(this).attr('id')
         id = [+id[5], +id[7]]
 
-        desk.conditional_test(id)
+        desk.handler(id)
     })
 }
