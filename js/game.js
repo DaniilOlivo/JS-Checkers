@@ -3,7 +3,6 @@ var i
 var j
 var n = 8
 
-// Фунукция сравнения массивов
 function comparing_arrays(array_1, array_2) {
     for(var l = 0; l < array_1.length; l++)
         if (array_1[l] != array_2[l])
@@ -41,9 +40,9 @@ class Desk{
                 for(j; j < n; j += 2) {
                     var color
                     if (i < 3) 
-                        color = 1 // Расстановка белых шашек
+                        color = 1
                     else
-                        color = 0 // Расстановка черных шашек
+                        color = 0
                         
                     this.array[i][j] = new Checker([i, j], color, this)
                     this.array[i][j].display()
@@ -52,7 +51,10 @@ class Desk{
     }
     
     get_cell(index) {
-        return this.array[index[0]][index[1]]
+        if (0 <= index[0] && 0 <= index[1] && index[0] < n && index[1] < n)
+            return this.array[index[0]][index[1]]
+        else
+            return -1
     }
 
     set_cell(index, value) {
@@ -66,13 +68,38 @@ class Desk{
             this.select(cell)
         else 
             if (this.sel != null) {
-                this.sel.action(id)
+                var check_take = this.sel.take_check(id)
+                if (check_take[0]) {
+                    this.sel.movement(id)
+                    check_take[1].removal()
+                    if (!this.sel.take_check()) {
+                        this.mandatory_taking = false
+                        this.action = true
+                    }
+                }
+
+                if (this.sel.motion_check(id) && !this.mandatory_taking) {
+                    this.sel.movement(id)
+                    this.action = true
+                }
 
                 if (this.action) {
+                    this.check()
                     this.next_turn()
                     this.action = false
                 }
             }
+    }
+
+    check() {
+        var cell
+        for(var k = 0; k < n; k++) {
+            for(var t = 0; t < n; t++) {
+                cell = this.array[k][t]
+                if (cell != 0) 
+                    cell.take_check()
+            }
+        }
     }
 
     select(cell) {
@@ -92,13 +119,6 @@ class Desk{
         else
             this.turn = 1
     }
-
-    check() {
-        for(i = 0; i < n; i++)
-            for(j = 0; j < n; j++)
-                if (this.array[i][j] != 0)
-                    this.array[i][j].check()
-    }
 }
 
 class Checker {
@@ -106,9 +126,6 @@ class Checker {
         this.cell = cell;
         this.color = color;
         this.desk = desk;
-        
-        this.mandatory_taking = false //Должна ли шашка бить
-        this.possible_actions = []
 
         this.selecting = false;
         
@@ -146,12 +163,10 @@ class Checker {
         this.display()
     }
 
-    // Относительный индекс от шакшки
     relative_index(y, x) {
         return [this.cell[0] + y, this.cell[1] + x]
     }
 
-    // Сокращенная проверка клеток
     comp_arr(index, y, x) {
         return comparing_arrays(index, this.relative_index(y, x))
     }
@@ -169,49 +184,42 @@ class Checker {
         this.display()
     }
 
-    check() {
-        this.motion_check()
-        this.take_check()
-    }
-
-    motion_check() {
+    motion_check(index) {
         var direct
         if (this.color == 1)
             direct = + 1
         else
             direct = - 1
         
-        for(i = -1; i <= 2; i += 2)
-            if (this.desk.get_cell(direct, i) == 0)
-                this.possible_actions.push({"Index": [direct, i]})
+        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1))
+            return true
+        return false
     }
 
-    take_check() {
-        var intermediate_cell // Клетка между index и клетткой, где стоит шашка
+    take_check(index) {
+        var intermediate_cell
+        var cell
 
         for(i = -1; i <= 1; i += 2)
-            for(j = -1; j <= 1; j += 2)
-                if (this.desk.get_cell([i * 2, j * 2]) == 0) {
+            for(j = -1; j <= 1; j += 2) {
+
+                if (index === undefined)
+                    cell = this.desk.get_cell(this.relative_index(i * 2, j * 2)) == 0
+                else
+                    cell = this.comp_arr(index, i * 2, j * 2)
+
+                if (cell) {
                     intermediate_cell = this.desk.get_cell(this.relative_index(i, j))
                     if (intermediate_cell != 0)
                         if (intermediate_cell.color != this.color) {
-                            this.possible_actions.push({"Index": [i * 2, j * 2], "Target": intermediate_cell})
-                            this.mandatory_taking = true
+                            this.desk.mandatory_taking = true
+                            if (index === undefined)    
+                                return true
+                            return [true, intermediate_cell]
                         }
                 }
-    }
-
-    action(index) {
-        for(i = 0; i < this.possible_actions.length; i++) {
-            var action = this.possible_actions[i]
-            if (comparing_arrays(action["Index"], index))
-                if ("Target" in action) {
-                    this.movement(index)
-                    action["Target"].removal()
-                }
-                else
-                    this.movement(index)
-        }
+            }
+        return false
     }
 }
 
