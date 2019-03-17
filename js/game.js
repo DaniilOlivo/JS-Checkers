@@ -1,4 +1,3 @@
-
 $(document).ready(init);
 var i
 var j
@@ -16,7 +15,8 @@ class Desk{
         this.sel = null
         this.action = false
         this.turn = 1
-
+        this.mandatory_taking = false
+        
         this.array = new Array(n)
         for(i = 0; i < n; i++)
             this.array[i] = new Array(n)
@@ -51,7 +51,10 @@ class Desk{
     }
     
     get_cell(index) {
-        return this.array[index[0]][index[1]]
+        if (0 <= index[0] && 0 <= index[1] && index[0] < n && index[1] < n)
+            return this.array[index[0]][index[1]]
+        else
+            return -1
     }
 
     set_cell(index, value) {
@@ -65,14 +68,38 @@ class Desk{
             this.select(cell)
         else 
             if (this.sel != null) {
-                this.sel.motion_check(id)
-                this.sel.check_take(id)
+                var check_take = this.sel.take_check(id)
+                if (check_take[0]) {
+                    this.sel.movement(id)
+                    check_take[1].removal()
+                    if (!this.sel.take_check()) {
+                        this.mandatory_taking = false
+                        this.action = true
+                    }
+                }
+
+                if (this.sel.motion_check(id) && !this.mandatory_taking) {
+                    this.sel.movement(id)
+                    this.action = true
+                }
 
                 if (this.action) {
+                    this.check()
                     this.next_turn()
                     this.action = false
                 }
             }
+    }
+
+    check() {
+        var cell
+        for(var k = 0; k < n; k++) {
+            for(var t = 0; t < n; t++) {
+                cell = this.array[k][t]
+                if (cell != 0) 
+                    cell.take_check()
+            }
+        }
     }
 
     select(cell) {
@@ -144,20 +171,12 @@ class Checker {
         return comparing_arrays(index, this.relative_index(y, x))
     }
 
-    motion_check(index) {
-        var direct
-        if (this.color == 1)
-            direct = + 1
-        else
-            direct = - 1
-        
-        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1)) {
-            this.move(index)
-            this.desk.action = true
-        }
+    removal() {
+        this.remove()
+        this.desk.set_cell(this.cell, 0)
     }
 
-    move(index) {
+    movement(index) {
         this.remove()
         this.desk.set_cell(this.cell, 0)
         this.desk.set_cell(index, this)
@@ -165,25 +184,42 @@ class Checker {
         this.display()
     }
 
-    check_take(index) {
-        var intermediate_cell
+    motion_check(index) {
+        var direct
+        if (this.color == 1)
+            direct = + 1
+        else
+            direct = - 1
+        
+        if (this.comp_arr(index, direct, -1) || this.comp_arr(index, direct, +1))
+            return true
+        return false
+    }
 
-        for(i = -1; i <= 1; i += 2) 
-            for(j = -1; j <= 1; j += 2)
-                if (this.comp_arr(index, i * 2, j  * 2)) {
+    take_check(index) {
+        var intermediate_cell
+        var cell
+
+        for(i = -1; i <= 1; i += 2)
+            for(j = -1; j <= 1; j += 2) {
+
+                if (index === undefined)
+                    cell = this.desk.get_cell(this.relative_index(i * 2, j * 2)) == 0
+                else
+                    cell = this.comp_arr(index, i * 2, j * 2)
+
+                if (cell) {
                     intermediate_cell = this.desk.get_cell(this.relative_index(i, j))
                     if (intermediate_cell != 0)
                         if (intermediate_cell.color != this.color) {
-                            this.move(index)
-                            intermediate_cell.take()
-                            this.desk.action = true
+                            this.desk.mandatory_taking = true
+                            if (index === undefined)    
+                                return true
+                            return [true, intermediate_cell]
                         }
                 }
-    }
-
-    take() {
-        this.remove()
-        this.desk.set_cell(this.cell, 0)
+            }
+        return false
     }
 }
 
