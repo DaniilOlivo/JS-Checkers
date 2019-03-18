@@ -83,6 +83,8 @@ class Desk{
                     this.action = true
                 }
 
+                this.sel.check_queen()
+
                 if (this.action) {
                     this.next_turn()
                     this.action = false
@@ -127,6 +129,7 @@ class Checker {
         this.cell = cell;
         this.color = color;
         this.desk = desk;
+        this.type = "checker"
 
         this.selecting = false;
         
@@ -141,9 +144,9 @@ class Checker {
             color = "black"
 
         if (this.selecting)
-            this.image = "img/selecting_checker_"+ color +".png" 
+            this.image = "img/selecting_" + this.type + "_"+ color +".png" 
         else
-            this.image = "img/checker_"+ color +".png"
+            this.image = "img/" + this.type + "_"+ color +".png"
     }
 
     indexing() {
@@ -222,7 +225,62 @@ class Checker {
             }
         return false
     }
+
+    check_queen() {
+        if (this.type == "checker")
+            if (this.color == 1 && this.cell[0] == 7 ||
+                this.color == 0 && this.cell[0] == 0)
+                this.transoformation_queen()
+    }
+
+    transoformation_queen() {
+        this.removal()
+        this.desk.set_cell(this.cell, new Queen(this.cell, this.color, this.desk))
+    }
 }
+
+
+class Vector {
+    constructor(initial_coordinates, step_y, step_x) {
+        var k = 0
+        this.array = [[initial_coordinates[0] + step_y, initial_coordinates[1] + step_x]]
+        
+        while (0 < this.array[k][0] && this.array[k][0] < n - 1 &&
+            0 < this.array[k][1] && this.array[k][1] < n - 1) {
+            this.array.push([this.array[k][0] + step_y, this.array[k][1] + step_x])
+            k++
+            }
+        
+            this.len = k + 1
+    } 
+}
+
+
+class Queen extends Checker {
+    constructor(cell, color, desk) {
+        super(cell, color, desk)
+        this.type = "queen"
+        this.update_image()
+        this.display()
+    }
+
+    motion_check(index) {
+        for(i = -1; i <= 1; i += 2)
+            for(j = -1; j <= 1; j += 2) {
+                var vector = new Vector(this.cell, i, j)
+                var available_moves = []
+                for(var t = 0; t < vector.len; t++)
+                    if (this.desk.get_cell(vector.array[t]) == 0)
+                        available_moves.push(vector.array[t])
+                    else
+                        break
+                for(t = 0; t < available_moves.length; t++)
+                    if (comparing_arrays(available_moves[t], index))
+                        return true
+            }
+        return false
+    } 
+} 
 
 
 function init() {
