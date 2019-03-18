@@ -84,9 +84,9 @@ class Desk{
                 }
 
                 if (this.action) {
-                    this.check()
                     this.next_turn()
                     this.action = false
+                    this.check()
                 }
             }
     }
@@ -96,8 +96,9 @@ class Desk{
         for(var k = 0; k < n; k++) {
             for(var t = 0; t < n; t++) {
                 cell = this.array[k][t]
-                if (cell != 0) 
-                    cell.take_check()
+                if (cell != 0)
+                    if (cell.color == this.turn) 
+                        cell.take_check()
             }
         }
     }
