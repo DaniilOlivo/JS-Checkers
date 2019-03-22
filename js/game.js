@@ -261,6 +261,7 @@ class Queen extends Checker {
         super(cell, color, desk)
         this.type = "queen"
         this.update_image()
+
         this.display()
     }
 
@@ -279,7 +280,38 @@ class Queen extends Checker {
                         return true
             }
         return false
-    } 
+    }
+
+    take_check(index) {
+        var intermediate_cell
+        var cell
+        var flag = false
+
+        for(i = -1; i <= 1; i += 2)
+            for(j = -1; j <= 1; j += 2) {
+
+                var vector = new Vector(this.cell, i, j)
+
+                for(var t = 0; t < vector.len; t++) {
+                    cell = this.desk.get_cell(vector.array[t])
+                    if (cell != 0)
+                        if (cell.color != this.color)
+                            flag = true
+                        else
+                            break
+                    else
+                        if (flag) {
+                                this.desk.mandatory_taking = true 
+                                if (index === undefined)    
+                                    return true
+                                return [true, this.desk.get_cell(vector.array[t - 1])]
+                            }
+                        else
+                            break
+                }
+            }
+        return false
+    }
 } 
 
 
