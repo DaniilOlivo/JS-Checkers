@@ -236,6 +236,7 @@ class Checker {
     transoformation_queen() {
         this.removal()
         this.desk.set_cell(this.cell, new Queen(this.cell, this.color, this.desk))
+        this.desk.sel = this.desk.get_cell(this.cell)
     }
 }
 
