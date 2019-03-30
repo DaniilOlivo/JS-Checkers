@@ -242,18 +242,62 @@ class Checker {
 
 
 class Vector {
-    constructor(initial_coordinates, step_y, step_x) {
+    constructor(initial_coordinates, step_y, step_x, desk) {
         var k = 0
-        this.array = [[initial_coordinates[0] + step_y, initial_coordinates[1] + step_x]]
+        var run = true
+
+        this.array_index = [initial_coordinates]
+        this.array_cell = []
+
+        var new_index = []
+
+        while (run) {
+            new_index = [this.array_index[k][0] + step_y, this.array_index[k][1] + step_x]
+            if (0 <= new_index[0] && new_index[0] < n &&
+                0 <= new_index[1] && new_index[1] < n) {
+                    this.array_index.push(new_index)
+                    this.array_cell.push(desk.get_cell(new_index))
+                    k++
+                }
+            else
+                run = false
+        }
+
+        this.array_index.shift()
+        this.len = k
+    }
+
+    sequence(element) {
+        var vector = []
+
+        for(var k = 0; k < this.len; k++) 
+            if(this.array_cell[k] === element)
+                vector.push(this.array_index[k])
+            else
+                break
+                
+        return vector
+    }
+
+    not_element(element) {
+        var vector = []
+
+        for(var k = 0; k < this.len; k++)
+            if(this.array_cell[k] !== element)
+                vector.push(this.array_index[k])
         
-        while (0 < this.array[k][0] && this.array[k][0] < n - 1 &&
-            0 < this.array[k][1] && this.array[k][1] < n - 1) {
-            this.array.push([this.array[k][0] + step_y, this.array[k][1] + step_x])
-            k++
-            }
-        
-            this.len = k + 1
-    } 
+        return vector
+    }
+
+    after(index, return_type) {
+        for(var k = 0; k < this.len - 1; k++)
+            if(comparing_arrays(index, this.array_index[k]))
+                if (return_type == "cell")
+                    return this.array_cell[k + 1]
+                else
+                    return this.array_index[k + 1]
+        return -1
+    }
 }
 
 
@@ -269,47 +313,38 @@ class Queen extends Checker {
     motion_check(index) {
         for(i = -1; i <= 1; i += 2)
             for(j = -1; j <= 1; j += 2) {
-                var vector = new Vector(this.cell, i, j)
-                var available_moves = []
-                for(var t = 0; t < vector.len; t++)
-                    if (this.desk.get_cell(vector.array[t]) == 0)
-                        available_moves.push(vector.array[t])
-                    else
-                        break
-                for(t = 0; t < available_moves.length; t++)
+
+                var vector = new Vector(this.cell, i, j, this.desk)
+                var available_moves = vector.sequence(0)
+
+                for(var t = 0; t < available_moves.length; t++)
                     if (comparing_arrays(available_moves[t], index))
                         return true
             }
         return false
     }
-
+    
     take_check(index) {
-        var intermediate_cell
-        var cell
-        var flag = false
-
         for(i = -1; i <= 1; i += 2)
             for(j = -1; j <= 1; j += 2) {
 
-                var vector = new Vector(this.cell, i, j)
+                var vector = new Vector(this.cell, i, j, this.desk)
+                var available_moves = vector.not_element(0)
 
-                for(var t = 0; t < vector.len; t++) {
-                    cell = this.desk.get_cell(vector.array[t])
-                    if (cell != 0)
-                        if (cell.color != this.color)
-                            flag = true
-                        else
-                            break
-                    else
-                        if (flag) {
-                                this.desk.mandatory_taking = true 
-                                if (index === undefined)    
-                                    return true
-                                return [true, this.desk.get_cell(vector.array[t - 1])]
-                            }
-                        else
-                            break
-                }
+                if(available_moves.length > 0)                
+                    if(this.desk.get_cell(available_moves[0]).color != this.color) {
+                        var cell = vector.after(available_moves[0], "cell")
+
+                        if(cell == 0) {
+                            this.desk.mandatory_taking = true 
+                            if (index === undefined)    
+                                return true
+                            else 
+                                if(comparing_arrays(index, vector.after(available_moves[0], "index")))
+                                    return [true, this.desk.get_cell(available_moves[0])]
+                        }
+                            
+                    }
             }
         return false
     }
