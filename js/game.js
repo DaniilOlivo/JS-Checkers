@@ -22,6 +22,13 @@ class Desk{
             this.array[i] = new Array(n)
     }
 
+    reset() {
+        this.sel = null
+        this.action = false
+        this.turn = 1
+        this.mandatory_taking = false
+    }
+
     fill_zero() {
         for(i = 0; i < n; i++)
             for(j = 0; j < n; j++)
@@ -47,7 +54,11 @@ class Desk{
                     this.array[i][j] = new Checker([i, j], color, this)
                     this.array[i][j].display()
                 } 
-            }   
+            }
+            /*
+            this.array[5][7] = new Checker([5, 7], 0, this)
+            this.array[5][7].display()
+            */
     }
     
     get_cell(index) {
@@ -89,8 +100,31 @@ class Desk{
                     this.next_turn()
                     this.action = false
                     this.check()
+                    return this.check_win()
                 }
             }
+        return 0
+    }
+
+    check_win() {
+        var black_checkers = 0
+        var white_checkers = 0
+        for(var k = 0; k < n; k++)
+            for(var t = 0; t < n; t++) {
+                var cell = this.array[k][t]
+                if (cell != 0)
+                    if (cell.color == 0)
+                        black_checkers++
+                    else
+                        white_checkers++
+            }
+        
+        if (black_checkers == 0)
+            return 1
+        else if (white_checkers == 0)
+            return 2
+        else
+            return 0
     }
 
     check() {
@@ -374,9 +408,12 @@ function init() {
     $('#start button').on('click', start);
 
     function start() {
+        desk.reset()
+
         switch_music("music/main.mp3")
 
         $('#start').hide();
+        $('#win').hide()
         $('#game').show();
 
         desk.place_checkers()
@@ -386,6 +423,30 @@ function init() {
         var id = $(this).attr('id')
         id = [+id[5], +id[7]]
 
-        desk.handler(id)
+        var result = desk.handler(id)
+        if(result != 0)
+            win(result)
     })
+
+    function win(winner) {
+        $('#game').hide();
+        $('#win').show()
+        
+        var losser = ""
+
+        if(winner == 1) {
+            winner = "белыe"
+            losser = "Черныe"
+        }
+        else {
+            winner = "черныe"
+            losser = "Белыe"
+        }
+
+
+        $('#win h1').html("Победили " + winner + "!")
+        $('#win h2').html(losser + " глотают пыль!")
+    }
+
+    $('#win button').on('click', start)
 }

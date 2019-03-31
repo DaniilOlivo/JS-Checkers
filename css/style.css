@@ -30,6 +30,10 @@ main {
         20px 30px 20px 0px black;
 }
 
+#win {
+    display: none;
+}
+
 #desk {
     position: absolute;
     border-collapse: collapse;
