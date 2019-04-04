@@ -30,7 +30,7 @@ main {
         20px 30px 20px 0px black;
 }
 
-#win {
+#win, #menu_settings {
     display: none;
 }
 
@@ -51,6 +51,13 @@ h1, h2{
     font-size: 3em;
     color: darkgray;
     padding-top: 10px;
+}
+
+.checkbox {
+    position: relative;
+    left: 150px;
+    font-size: 2em;
+    color: darkgray;
 }
 
 button {

@@ -1,4 +1,9 @@
 $(document).ready(init);
+
+var enable_music
+var background
+var color_font
+
 var i
 var j
 var n = 8
@@ -55,10 +60,6 @@ class Desk{
                     this.array[i][j].display()
                 } 
             }
-            /*
-            this.array[5][7] = new Checker([5, 7], 0, this)
-            this.array[5][7].display()
-            */
     }
     
     get_cell(index) {
@@ -386,6 +387,15 @@ class Queen extends Checker {
 
 
 function init() {
+    if($('#theme').attr('value')) {
+        background = "../img/bg.png"
+        color_font = "darkgray"
+    }
+    else {
+        background = "../img/bg2.jpg"
+        color_font = "black"
+    }
+
     var music = document.getElementById('music');
 
     function switch_music(new_music) {
@@ -405,16 +415,25 @@ function init() {
     
     var desk = new Desk()
 
-    $('#start button').on('click', start);
+    function transition(where) {
+        $('#start').hide();
+        $('#menu_settings').hide();  
+        $('#game').hide();
+        $('#win').hide()
+
+        $(where).show()
+    }
+
+    $('#start_game').on('click', start);
+    $('#settings').on('click', function() {transition('#menu_settings')})
+    $('#menu_settings button').on('click', function() {transition('#start')})
 
     function start() {
         desk.reset()
 
         switch_music("music/main.mp3")
 
-        $('#start').hide();
-        $('#win').hide()
-        $('#game').show();
+        transition('#game')
 
         desk.place_checkers()
     }
@@ -429,8 +448,7 @@ function init() {
     })
 
     function win(winner) {
-        $('#game').hide();
-        $('#win').show()
+        transition('#win')
         
         var losser = ""
 
