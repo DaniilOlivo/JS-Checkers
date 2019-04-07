@@ -2,7 +2,7 @@
 
 body {
     background-color: black;
-    background-image: url("../img/bg.png");
+    background-image: url("../img/bg1.png");
     background-size: 100%;
 }
 
@@ -31,7 +31,8 @@ main {
 div#desk {
     width: 440px;
     height: 440px;
-    background: url("../img/desk2.jpg");
+    background: url("../img/desk1.png");
+    margin: auto;
     box-shadow:
         inset 2px 2px black,
         20px 30px 20px 0px black;
