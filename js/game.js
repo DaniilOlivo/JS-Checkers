@@ -328,9 +328,9 @@ class Vector {
         for(var k = 0; k < this.len - 1; k++)
             if(comparing_arrays(index, this.array_index[k]))
                 if (return_type == "cell")
-                    return this.array_cell[k + 1]
+                    return this.array_cell.slice(k + 1)
                 else
-                    return this.array_index[k + 1]
+                    return this.array_index.slice(k + 1)
         return -1
     }
 }
@@ -368,16 +368,17 @@ class Queen extends Checker {
 
                 if(available_moves.length > 0)                
                     if(this.desk.get_cell(available_moves[0]).color != this.color) {
-                        var cell = vector.after(available_moves[0], "cell")
+                        var cells = vector.after(available_moves[0], "cell")
 
-                        if(cell == 0) {
-                            this.desk.mandatory_taking = true 
-                            if (index === undefined)    
-                                return true
-                            else 
-                                if(comparing_arrays(index, vector.after(available_moves[0], "index")))
-                                    return [true, this.desk.get_cell(available_moves[0])]
-                        }
+                        for(var t = 0; t < cells.length; t++)
+                            if(cells[t] == 0) {
+                                this.desk.mandatory_taking = true 
+                                if (index === undefined)    
+                                    return true
+                                else 
+                                    if(comparing_arrays(index, vector.after(available_moves[0], "index")[t]))
+                                        return [true, this.desk.get_cell(available_moves[0])]
+                            }
                             
                     }
             }
@@ -395,6 +396,10 @@ function init() {
         background = "../img/bg2.jpg"
         color_font = "black"
     }
+    
+    var timer
+    var time_black = 0;
+    var time_white = 0;
 
     var music = document.getElementById('music');
 
@@ -402,6 +407,30 @@ function init() {
         music.pause()
         music.src = new_music;
         music.play();
+    }
+
+    function tick() {
+        var minutes
+        var seconds
+        var time
+        if (desk.turn == 1) {
+            time_white++
+            time = time_white
+        }
+        else {
+            time_black++
+            time = time_black
+        }
+
+        minutes = Math.floor(time/60)
+        seconds = time % 60
+        if (seconds < 10)
+            seconds = "0" + seconds
+
+        if (desk.turn ==1)
+            $('#timer_white').html(minutes + ":" + seconds)
+        else
+            $('#timer_black').html(minutes + ":" + seconds)
     }
 
     create_HTML_table()
@@ -436,6 +465,8 @@ function init() {
         transition('#game')
 
         desk.place_checkers()
+
+        timer = setInterval(tick, 1000)
     }
 
     $('#desk').on('click', '.cell', function() {
@@ -450,7 +481,16 @@ function init() {
     function win(winner) {
         transition('#win')
         
+        var time = time_black + time_white
         var losser = ""
+
+        var minutes
+        var seconds
+
+        minutes = Math.floor(time/60)
+        seconds = time % 60
+        if (seconds < 10)
+            seconds = "0" + seconds
 
         if(winner == 1) {
             winner = "белыe"
@@ -462,8 +502,9 @@ function init() {
         }
 
 
-        $('#win h1').html("Победили " + winner + "!")
-        $('#win h2').html(losser + " глотают пыль!")
+        $('#winner').html("Победили " + winner + "!")
+        $('#losser').html(losser + " глотают пыль!")
+        $('#time_game').html("Вы играли: " + minutes + ":" + seconds)
     }
 
     $('#win button').on('click', start)

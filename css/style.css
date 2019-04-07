@@ -18,23 +18,26 @@ main {
 }
 
 #game {
-    background-color: black;
     display: none;
     position: relative;
     width: 440px;
-    height: 440px;
-    background: url("../img/desk2.jpg");
     margin: auto;
-    box-shadow:
-        inset 2px 2px black,
-        20px 30px 20px 0px black;
 }
 
 #win, #menu_settings {
     display: none;
 }
 
-#desk {
+div#desk {
+    width: 440px;
+    height: 440px;
+    background: url("../img/desk2.jpg");
+    box-shadow:
+        inset 2px 2px black,
+        20px 30px 20px 0px black;
+}
+
+table#desk {
     position: absolute;
     border-collapse: collapse;
 }
@@ -58,6 +61,13 @@ h1, h2{
     left: 150px;
     font-size: 2em;
     color: darkgray;
+}
+
+h3 {
+    text-align: center;
+    font-size: 2em;
+    color: darkgray;
+    padding: 20 px
 }
 
 button {
